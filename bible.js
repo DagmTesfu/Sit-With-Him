@@ -93,12 +93,21 @@ else if(B.b!==null)B.b=null;else if(B.hv)B.hv=false;
 view();window.scrollTo(0,0)}
 function bibleAct(a,v){switch(a){
 case "book":B.b=+v;B.c=null;B.from=null;B.sel=[];view();window.scrollTo(0,0);return true;
-case "chap":B.c=+v;B.v1=0;B.sel=[];pos();view();window.scrollTo(0,0);return true;
+case "chap":
+  B.c=+v;B.v1=0;B.sel=[];pos();
+  trackEvent("chapter_read", {
+    book_name: CANON[B.b],
+    chapter_number: B.c
+  });
+  view();window.scrollTo(0,0);return true;
 case "prev":step(-1);return true;case "next":step(1);return true;
 case "bback":bback();return true;
 case "open":var p=v.split("|").map(Number);B.from=s.tab;B.b=p[0];B.c=p[1];B.v1=p[2];B.v2=p[3];B.sel=[];B.jump=true;pos();tab("bible",true);return true;
 case "cont":var o=getPos();B.b=o.b;B.c=o.c;B.from=null;B.v1=0;B.sel=[];view();window.scrollTo(0,0);return true;
-case "search":B.q=($("q").value||"").trim()||null;B.b=B.c=null;view();return true;
+case "search":
+  B.q=($("q").value||"").trim()||null;
+  if(B.q) trackEvent("bible_search");
+  B.b=B.c=null;view();return true;
 case "clearq":B.q=null;view();return true;
 case "fs":B.fs=Math.max(15,Math.min(30,B.fs+ +v));try{localStorage.setItem("sit-fs",B.fs)}catch(e){}keepY();return true;
 case "vsel":var k=+v,i=B.sel.indexOf(k);if(i>-1)B.sel.splice(i,1);else B.sel.push(k);keepY();return true;

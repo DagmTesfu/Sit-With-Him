@@ -3,6 +3,11 @@ var PREV={spirit:"arrive",read:"spirit",pray:"read",still:"pray",write:"still",k
 var PASS=["Read it once, slowly, as if hearing it for the first time.","Read it again. Which word or phrase stays with you?","Read it a third time. What might He be saying to you through it?"];
 var DPRAY="Tell Him plainly how you feel and why. Then be quiet and listen for what He says.";
 function $(i){return document.getElementById(i)}
+function trackEvent(name, params) {
+  if (typeof window.gtag === "function") {
+    window.gtag("event", name, params || {});
+  }
+}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function fmt(n){var m=Math.floor(n/60),x=n%60;return m+":"+(x<10?"0":"")+x}
 function greet(){var h=new Date().getHours();return h<12?"Good morning.":h<18?"Good afternoon.":"Good evening."}
@@ -97,7 +102,9 @@ return "<p class='ref'>Carrying with you today</p><div class='verse'>"+x.html+"<
 function act(a,v){if(bibleAct(a,v))return;
 switch(a){
 case "tab":tab(v);break;
-case "mood":s.mood=v;s.pass=0;s.more=false;go("spirit");break;
+case "mood":
+  trackEvent("devotional_started");
+  s.mood=v;s.pass=0;s.more=false;go("spirit");break;
 case "back":stop();go(PREV[s.step]);break;
 case "toread":go("read");break;
 case "again":s.pass++;view();break;
@@ -116,7 +123,10 @@ case "jadd":var jt=($("jn").value||"").trim();if(jt){var je=load();je.push({t:Da
 case "pinto":var pq=loadPins();pq[v]=pq[v]||[];if(pq[v].indexOf(B.pinref)<0)pq[v].push(B.pinref);savePins(pq);toast("Pinned to "+T[v].l);B.pinref=null;B.sel=[];view();break;
 case "pinhere":var ph=loadPins();ph[s.t]=ph[s.t]||[];if(ph[s.t].indexOf(v)<0)ph[s.t].push(v);savePins(ph);toast("Pinned");view();break;
 case "unpin":var pu=loadPins();pu[s.t]=(pu[s.t]||[]).filter(function(r){return r!==v});savePins(pu);view();break;
-case "install":if(s.ip){s.ip.prompt();s.ip=null}view();break;
+case "install":
+  trackEvent("install_prompt_clicked");
+  if(s.ip){s.ip.prompt();s.ip=null}
+  view();break;
 case "padd":var pi=$("pr"),pt=(pi.value||"").trim();if(pt){var pl=loadP();pl.push({t:Date.now(),text:pt});saveP(pl)}view();break;
 case "pans":s.pa=+v;view();break;
 case "pcancel":s.pa=null;view();break;
@@ -135,6 +145,9 @@ document.querySelectorAll(".grp").forEach(function(g){var n=0;g.querySelectorAll
 var nf=$("nof");if(nf)nf.style.display=any?"none":""});
 document.addEventListener("change",function(e){if(e.target.id==="ver")act("ver",e.target.value)});
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();s.ip=e;if(s.tab==="today"&&s.step==="arrive")view()});
+window.addEventListener("appinstalled", function() {
+  trackEvent("pwa_install");
+});
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(function(){});
 try{B.fs=+localStorage.getItem("sit-fs")||19;var sv=localStorage.getItem("sit-ver");if(sv&&VERSIONS.some(function(x){return x.id===sv}))B.ver=sv}catch(e){}
 loadBible();view();
